@@ -62,7 +62,7 @@
 					<div class="filter-widget">
 						<h2 class="fw-title">Categories</h2>
 						<ul class="category-menu">
-							<li><a type="button" onclick="changeCategory('all')" >All </a>
+							<li><a href="#" type="button" onclick="changeCategory('all')" >All </a>
 							<li><a href="#">Woman wear</a>
 								<ul id="list-woman" class="sub-menu">
 									<li><a href="#">Midi Dresses <span>(2)</span></a></li>
@@ -241,10 +241,10 @@
 			for (let i = productPerPage * (page - 1); i < Math.min(total, productPerPage * (page - 1) + productPerPage); i++) {
 				$('#list-product').append(`<div class="col-lg-4 col-sm-6">
 <div class="product-item">
-<div class="pi-pic">
+<div class="item pi-pic">
 <img src="./img/product/${data[i].image%11 +1}.jpg" alt="">
 <div class="pi-links">
-<a href="#" class="add-card"><i class="flaticon-bag"></i><span>ADD TO CART</span></a>
+<a href="#" class="add-card"><i class="flaticon-bag"></i><span onclick="addSingleProductToCart(${data[i].id})">ADD TO CART</span></a>
 <a href="#" class="wishlist-btn"><i class="flaticon-heart"></i></a>
 </div>
 </div>
@@ -316,12 +316,12 @@
 						$('#list-children').empty();
 						for(let i = 0; i < result.data.length; i++){
 							if(result.data[i].categoryType == "Woman"){
-								$('#list-woman').append(`<li><a type="button" onclick="changeCategory('${result.data[i].categoryName}','${result.data[i].categoryType}')">${result.data[i].categoryName}</a></li>`);
+								$('#list-woman').append(`<li><a href="#" type="button" onclick="changeCategory('${result.data[i].categoryName}','${result.data[i].categoryType}')">${result.data[i].categoryName}</a></li>`);
 							}
 							if(result.data[i].categoryType == "Man" )
-									$('#list-man').append(`<li><a  type="button" onclick="changeCategory('${result.data[i].categoryName}','${result.data[i].categoryType}')">${result.data[i].categoryName}</a></li>`);
+									$('#list-man').append(`<li><a href="#" type="button" onclick="changeCategory('${result.data[i].categoryName}','${result.data[i].categoryType}')">${result.data[i].categoryName}</a></li>`);
 							if(result.data[i].categoryType == "Children")''
-									$('#list-children').append(`<li><a type="button" onclick="changeCategory('${result.data[i].categoryName}','${result.data[i].categoryType}')">${result.data[i].categoryName}</a></li>`);
+									$('#list-children').append(`<li><a href="#" type="button" onclick="changeCategory('${result.data[i].categoryName}','${result.data[i].categoryType}')">${result.data[i].categoryName}</a></li>`);
 						}
 					}
 					else {
@@ -338,6 +338,93 @@
 			currentCategory = categoryName;
 		    loadAllData();
 		}
+
+		var userInfo = null;
+		var token = getCookie("token");
+		function getCookie(cname) {
+			var name = cname + "=";
+			var ca = document.cookie.split(';');
+			for(var i = 0; i < ca.length; i++) {
+				var c = ca[i];
+				while (c.charAt(0) == ' ') {
+					c = c.substring(1);
+				}
+				if (c.indexOf(name) == 0) {
+					return c.substring(name.length, c.length);
+				}
+			}
+			return "";
+		}
+		console.log(token);
+		getUserInfo();
+		function getUserInfo() {
+			if(token == ""){
+				console.log("Tai khoan chua dang nhap");
+			}
+			$.ajax({
+				url: "http://localhost:8082/apiLogin/getUserInfo",
+				data: { signature: token },
+				type: "GET",
+				beforeSend: function(xhr){xhr.setRequestHeader('token', token);},
+				success: function (result) {
+					console.log(result);
+					if(result.data != null){
+						userInfo = result.data;
+						console.log(userInfo);
+						fillUserInfo();
+
+					}
+				}
+			})
+		}
+		function fillUserInfo() {
+			$('#icon-login').remove();
+			$('#user-name').html("Hi, "+userInfo.name);
+			$("#user-info").css("display", "inline-block");
+			let numberProductInCart = 0;
+			userInfo.cart.listProduct.map(item => {
+				numberProductInCart += item.quantity;
+			});
+			console.log("Number of product in cart: " + numberProductInCart);
+			$('#number-product-in-cart').html(numberProductInCart);
+		}
+		function addSingleProductToCart(productID) {
+			token = getCookie("token");
+			getUserInfo();
+			if(userInfo == null){
+				window.location.replace("http://localhost:8082/login");
+				return;
+			}
+			let updateCartRequest = {
+				id:productID,
+				number: 1,
+				type: 1
+			};
+			$.ajax({
+				url:"http://localhost:8082/cart/update/"+userInfo.id,
+				data: { signature: token },
+				type:"PUT",
+				data:JSON.stringify(updateCartRequest),
+				contentType: "application/json",
+				beforeSend: function(xhr){xhr.setRequestHeader('token', token);},
+				success: function (response) {
+					console.log(response);
+					if(response.code == '00'){
+						console.log("Sucess add product to cart!");
+						token = getCookie("token");
+						getUserInfo();
+					}
+					if(response.code == '404'){
+						window.location.replace("http://localhost:8082/login");
+					}
+				},
+				error: function (error) {
+					alert(error);
+				}
+			})
+		}
+
+
 	</script>
 
 	</body>

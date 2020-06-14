@@ -71,7 +71,7 @@
 									<th class="total-th">Price</th>
 								</tr>
 							</thead>
-							<tbody>
+							<tbody id="list-product-in-cart">
 								<tr>
 									<td class="product-col">
 										<img src="img/cart/1.jpg" alt="">
@@ -130,7 +130,7 @@
 						</table>
 						</div>
 						<div class="total-cost">
-							<h6>Total <span>$99.90</span></h6>
+							<h6>Total <span id="total-price">$99.90</span></h6>
 						</div>
 					</div>
 				</div>
@@ -238,5 +238,210 @@
 	<script src="js/jquery-ui.min.js"></script>
 	<script src="js/main.js"></script>
 
+	<script>
+		var userInfo = null;
+		var token = getCookie("token");
+		function getCookie(cname) {
+			var name = cname + "=";
+			var ca = document.cookie.split(';');
+			for(var i = 0; i < ca.length; i++) {
+				var c = ca[i];
+				while (c.charAt(0) == ' ') {
+					c = c.substring(1);
+				}
+				if (c.indexOf(name) == 0) {
+					return c.substring(name.length, c.length);
+				}
+			}
+			return "";
+		}
+		console.log(token);
+		getUserInfo();
+		function getUserInfo() {
+			if(token == ""){
+				console.log("Tai khoan chua dang nhap");
+			}
+			$.ajax({
+				url: "http://localhost:8082/apiLogin/getUserInfo",
+				data: { signature: token },
+				type: "GET",
+				beforeSend: function(xhr){xhr.setRequestHeader('token', token);},
+				success: function (result) {
+					console.log(result);
+					if(result.data != null){
+						userInfo = result.data;
+						console.log(userInfo);
+						fillUserInfo();
+						renderProductInCard(userInfo.cart.listProduct);
+					}
+					else{
+							window.location.replace("http://localhost:8082/login");
+					}
+				}
+			})
+		}
+		function fillUserInfo() {
+			$('#icon-login').remove();
+			$('#user-name').html("Hi, "+userInfo.name);
+			$("#user-info").css("display", "inline-block");
+			let numberProductInCart = 0;
+			userInfo.cart.listProduct.map(item => {
+				numberProductInCart += item.quantity;
+			});
+			console.log("Number of product in cart: " + numberProductInCart);
+			$('#number-product-in-cart').html(numberProductInCart);
+		}
+
+		function renderProductInCard(data) {
+			$('#list-product-in-cart').empty();
+			let totalPrice = 0;
+			data.map(item => {
+				$('#list-product-in-cart').append(`<tr>
+<td class="product-col">
+<img src="./img/product/${item.image%11 +1}.jpg" alt="">
+<div class="pc-title">
+<h4>${item.name}</h4>
+<p>$ ${item.price}</p>
+</div>
+</td>
+<td class="quy-col">
+<div class="quantity">
+                  <div class="pro-qty"><span class="dec qtybtn" onclick="removeSingleProductFromCart(${item.id})">-</span>
+<input type="text" onchange="updateNumberProduct(${item.id},this.value)" value="${item.quantity}">
+<span class="inc qtybtn" onclick="addSingleProductToCart(${item.id})">+</span></div>
+
+</div>
+</td>
+<td class="size-col"><h4>Size M</h4></td>
+<td class="total-col"><h4>$ ${item.price * item.quantity}</h4></td>
+</tr>`);
+				totalPrice += item.price * item.quantity;
+			})
+			$('#total-price').empty();
+			$('#total-price').html("$" +totalPrice);
+		}
+
+
+		function addSingleProductToCart(productID) {
+			token = getCookie("token");
+			getUserInfo();
+			if (userInfo == null) {
+				window.location.replace("http://localhost:8082/login");
+				return;
+			}
+			let updateCartRequest = {
+				id: productID,
+				number: 1,
+				type: 1
+			};
+			$.ajax({
+				url: "http://localhost:8082/cart/update/" + userInfo.id,
+				data: {signature: token},
+				type: "PUT",
+				data: JSON.stringify(updateCartRequest),
+				contentType: "application/json",
+				beforeSend: function (xhr) {
+					xhr.setRequestHeader('token', token);
+				},
+				success: function (response) {
+					console.log(response);
+					if (response.code == '00') {
+						console.log("Sucess add product to cart!");
+						token = getCookie("token");
+						getUserInfo();
+					}
+					if (response.code == '404') {
+						window.location.replace("http://localhost:8082/login");
+					}
+				},
+				error: function (error) {
+					alert(error);
+				}
+			})
+		}
+		function removeSingleProductFromCart(productID) {
+			token = getCookie("token");
+			getUserInfo();
+			if (userInfo == null) {
+				window.location.replace("http://localhost:8082/login");
+				return;
+			}
+			let updateCartRequest = {
+				id: productID,
+				number: 1,
+				type: 2
+			};
+			$.ajax({
+				url: "http://localhost:8082/cart/update/" + userInfo.id,
+				data: {signature: token},
+				type: "PUT",
+				data: JSON.stringify(updateCartRequest),
+				contentType: "application/json",
+				beforeSend: function (xhr) {
+					xhr.setRequestHeader('token', token);
+				},
+				success: function (response) {
+					console.log(response);
+					if (response.code == '00') {
+						console.log("Sucess add product to cart!");
+						token = getCookie("token");
+						getUserInfo();
+					}
+					if (response.code == '404') {
+						window.location.replace("http://localhost:8082/login");
+					}
+				},
+				error: function (error) {
+					alert(error);
+				}
+			})
+		}
+
+		function updateNumberProduct(productID, number) {
+			if(isNaN(number) || number == "" || number<0 || number%1 != 0){
+				alert("invalid data!");
+				getProductInCart(cartID);
+				return;
+			}
+			token = getCookie("token");
+			getUserInfo();
+			if (userInfo == null) {
+				window.location.replace("http://localhost:8082/login");
+				return;
+			}
+			let updateCartRequest = {
+				id: productID,
+				number: number,
+				type: 3
+			};
+			$.ajax({
+				url: "http://localhost:8082/cart/update/" + userInfo.id,
+				data: {signature: token},
+				type: "PUT",
+				data: JSON.stringify(updateCartRequest),
+				contentType: "application/json",
+				beforeSend: function (xhr) {
+					xhr.setRequestHeader('token', token);
+				},
+				success: function (response) {
+					console.log(response);
+					if (response.code == '00') {
+						console.log("Sucess add product to cart!");
+						token = getCookie("token");
+						getUserInfo();
+					}
+					if (response.code == '404') {
+						window.location.replace("http://localhost:8082/login");
+					}
+				},
+				error: function (error) {
+					alert(error);
+				}
+			})
+		}
+
+
+
+	</script>
 	</body>
 </html>

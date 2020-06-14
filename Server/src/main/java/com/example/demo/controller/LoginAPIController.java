@@ -7,14 +7,12 @@ import com.example.demo.dto.LoginRequest;
 import com.example.demo.dto.RegisterRequest;
 import com.example.demo.model.Cart;
 import com.example.demo.model.Product;
+import com.example.demo.model.UserInfo;
 import com.example.demo.model.Users;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.service.TokenService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -118,6 +116,39 @@ public class LoginAPIController {
             response.setData(token);
         }
 
+        return response;
+    }
+
+    @RequestMapping(value = "getUserInfo", method = RequestMethod.GET)
+    public BaseResponse getUserInfo(@RequestHeader("token") String token){
+        BaseResponse response = new BaseResponse();
+        if(!tokenService.validateToken(token)){
+            response.setCode(Code.NOT_FOUND);
+            response.setMessage(Message.NOT_FOUND);
+            response.setData(null);
+            return response;
+        }
+        String userID = tokenService.readJWT(token);
+        Optional<Users> user = userRepository.findById(userID);
+        if(!user.isPresent()){
+            response.setCode(Code.NOT_FOUND);
+            response.setMessage(Message.NOT_FOUND);
+            response.setData(null);
+            return response;
+        }
+        UserInfo userInfo = new UserInfo();
+        userInfo.setId(user.get().getId());
+        userInfo.setUsername(user.get().getUsername());
+        userInfo.setCart(user.get().getCart());
+        userInfo.setListRole(user.get().getListRole());
+        userInfo.setAddress(user.get().getAddress());
+        userInfo.setEmail(user.get().getAddress());
+        userInfo.setPhone(user.get().getPhone());
+        userInfo.setName(user.get().getName());
+
+        response.setCode(Code.SUCCESS);
+        response.setMessage(Message.GET_DATA_SUCCESS);
+        response.setData(userInfo);
         return response;
     }
 }

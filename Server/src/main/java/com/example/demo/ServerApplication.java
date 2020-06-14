@@ -26,21 +26,21 @@ public class ServerApplication implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
 //        for(int i = 21; i<= 30; i++){
-//            Product product = new Product();
-//            product.setId(String.valueOf(i));
-//            product.setName("Ao khoac" + String.valueOf(i));
-//            product.setDescription("This is the product description");
-//            product.setImage(String.valueOf(i));
-//            product.setCategory("Maxi Dresses");
-//            product.setPrice(i*10);
-//            List<String> size = new ArrayList<>();
-//            size.add("S");
-//            size.add("M");
-//            size.add("L");
-//            size.add("XL");
-//            product.setSize(size);
-//            productRepository.save(product);
-//        }
+////            Product product = new Product();
+//////            product.setId(String.valueOf(i));
+//////            product.setName("Ao khoac" + String.valueOf(i));
+//////            product.setDescription("This is the product description");
+//////            product.setImage(String.valueOf(i));
+//////            product.setCategory("Maxi Dresses");
+//////            product.setPrice(i*10);
+//////            List<String> size = new ArrayList<>();
+//////            size.add("S");
+//////            size.add("M");
+//////            size.add("L");
+//////            size.add("XL");
+//////            product.setSize(size);
+//////            productRepository.save(product);
+//////        }
 //        Category category = new Category();
 //        category.setCategoryType("Woman");
 //        category.setCategoryName("T-Shirt");
