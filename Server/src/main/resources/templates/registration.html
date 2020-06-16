@@ -126,7 +126,10 @@
             contentType: "application/json",
             success: function (result) {
                 console.log("response", result);
-                if (result.code == "00") alert("Dang ki thanh cong!");
+                if (result.code == "00")
+                {alert("Dang ki thanh cong!");
+                    window.location.replace("http://localhost:8082/login");
+                }
                 else alert(result.message);
             }
         })

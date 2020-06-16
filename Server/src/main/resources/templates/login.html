@@ -135,8 +135,9 @@
             success: function (result) {
                 console.log("response", result);
                 if (result.code == "00"){
-                    alert("Dang nhap thanh cong!");
+                    console.log("Dang nhap thanh cong!");
                     setCookie("token",result.data,5);
+                    window.location.replace("http://localhost:8082/index");
                 }
                 else alert(result.message);
             }

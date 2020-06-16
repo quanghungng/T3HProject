@@ -12,7 +12,7 @@ public class AuthenRequestAPIService {
         if(tokenService.validateToken(token)){
             String idInToken = tokenService.readJWT(token);
             if(id.equals(idInToken)){
-                return "ok";
+                return "Ok";
             }
             else{
                 return "Not allowed";

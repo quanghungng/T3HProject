@@ -13,7 +13,7 @@
             <div class="row">
                 <div class="col-lg-2 text-center text-lg-left">
                     <!-- logo -->
-                    <a href="./index.html" class="site-logo">
+                    <a href="./index" class="site-logo">
                         <img src="img/logo.png" alt="">
                     </a>
                 </div>
@@ -25,16 +25,20 @@
                 </div>
                 <div class="col-xl-4 col-lg-5">
                     <div class="user-panel">
-                        <div class="up-item">
+                        <div id="icon-login" class="up-item">
                             <i class="flaticon-profile"></i>
-                            <a href="#">Sign</a> In or <a href="#">Create Account</a>
+                            <a href="/login">Sign</a> In or <a href="/registration">Create Account</a>
+                        </div>
+                        <div id="user-info" style="display: none;" class="up-item" >
+                            <i class="flaticon-profile"></i>
+                            <a id="user-name" href="#"></a>
                         </div>
                         <div class="up-item">
                             <div class="shopping-card">
-                                <i class="flaticon-bag"></i>
-                                <span>0</span>
+                                <i class="shopping-card flaticon-bag"></i>
+                                <span id="number-product-in-cart" >0</span>
                             </div>
-                            <a href="#">Shopping Cart</a>
+                            <a onclick="openCart()" href="#">Shopping Cart</a>
                         </div>
                     </div>
                 </div>
@@ -73,7 +77,78 @@
             </ul>
         </div>
     </nav>
+    <!--====== Javascripts & Jquery ======-->
+    <script th:src="@{js/jquery-3.2.1.min.js}"></script>
+    <script th:src="@{js/bootstrap.min.js}"></script>
+    <script th:src="@{js/jquery.slicknav.min.js}"></script>
+    <script th:src="@{js/owl.carousel.min.js}"></script>
+    <script th:src="@{js/jquery.nicescroll.min.js}"></script>
+    <script th:src="@{js/jquery.zoom.min.js}"></script>
+    <script th:src="@{js/jquery-ui.min.js}"></script>
+    <script th:src="@{js/main.js}"></script>
+    <script>
+        var userInfo ;
+        var token = getCookie("token");
+        function getCookie(cname) {
+            var name = cname + "=";
+            var ca = document.cookie.split(';');
+            for(var i = 0; i < ca.length; i++) {
+                var c = ca[i];
+                while (c.charAt(0) == ' ') {
+                    c = c.substring(1);
+                }
+                if (c.indexOf(name) == 0) {
+                    return c.substring(name.length, c.length);
+                }
+            }
+            return "";
+        }
+        console.log(token);
+        getUserInfo();
+        function getUserInfo() {
+            if(token == ""){
+                console.log("Tai khoan chua dang nhap");
+            }
+            $.ajax({
+                url: "http://localhost:8082/apiLogin/getUserInfo",
+                data: { signature: token },
+                type: "GET",
+                beforeSend: function(xhr){xhr.setRequestHeader('token', token);},
+                success: function (result) {
+                    console.log(result);
+                    if(result.data != null){
+                        userInfo = result.data;
+                        console.log(userInfo);
+                        fillUserInfo();
+                    }
+                }
+            })
+        }
+        function fillUserInfo() {
+            $('#icon-login').remove();
+            $('#user-name').html("Hi, "+userInfo.name);
+            $("#user-info").css("display", "inline-block");
+            let numberProductInCart = 0;
+            userInfo.cart.listProduct.map(item => {
+                numberProductInCart += item.quantity;
+            });
+            console.log("Number of product in cart: " + numberProductInCart);
+            $('#number-product-in-cart').html(numberProductInCart);
+        }
+
+
+
+        function openCart() {
+            if(userInfo == null){
+                window.location.replace("http://localhost:8082/login");
+            }
+            else{
+                window.location.replace("http://localhost:8082/cart");
+            }
+        }
+    </script>
 </header>
 <!-- Header section end -->
+
 </body>
 </html>
