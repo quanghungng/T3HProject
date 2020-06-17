@@ -19,5 +19,8 @@ public class HomeController {
     public String login() { return "login"; }
     @RequestMapping(value = "/cart")
     public String cart() { return "cart"; }
+    @RequestMapping(value = "/checkout")
+    public String checkout() { return "checkout"; }
+
 
 }

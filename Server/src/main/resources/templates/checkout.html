@@ -57,36 +57,40 @@
 		<div class="container">
 			<div class="row">
 				<div class="col-lg-8 order-2 order-lg-1">
-					<form class="checkout-form">
+					<form id="form-input" class="checkout-form">
 						<div class="cf-title">Billing Address</div>
 						<div class="row">
-							<div class="col-md-7">
-								<p>*Billing Information</p>
-							</div>
-							<div class="col-md-5">
+							<div class="col-md-12">
 								<div class="cf-radio-btns address-rb">
 									<div class="cfr-item">
-										<input type="radio" name="pm" id="one">
+										<input type="radio" checked="checked" name="pm" id="one" value="1">
 										<label for="one">Use my regular address</label>
 									</div>
 									<div class="cfr-item">
-										<input type="radio" name="pm" id="two">
+										<input type="radio" name="pm" id="two" value="2">
 										<label for="two">Use a different address</label>
 									</div>
 								</div>
 							</div>
 						</div>
-						<div class="row address-inputs">
+						<div style="margin-bottom: 50px;" id="default-info" class="col-md-12">
+							<p>*Billing Information</p>
+							<p id="name-of-user">Name:</p>
+							<p id="user-phone">Phone number:</p>
+							<p id="user-address">Address:</p>
+						</div>
+						<div id="different-info" style="display: none;" class="row address-inputs">
 							<div class="col-md-12">
+								<p>*Billing Information</p>
+								<input type="text" placeholder="Name">
+								<input type="text" placeholder="Phone number">
 								<input type="text" placeholder="Address">
-								<input type="text" placeholder="Address line 2">
-								<input type="text" placeholder="Country">
 							</div>
 							<div class="col-md-6">
 								<input type="text" placeholder="Zip code">
 							</div>
 							<div class="col-md-6">
-								<input type="text" placeholder="Phone no.">
+								<input type="text" placeholder="Note">
 							</div>
 						</div>
 						<div class="cf-title">Delievery Info</div>
@@ -114,34 +118,19 @@
 								</div>
 							</div>
 						</div>
-						<div class="cf-title">Payment</div>
-						<ul class="payment-list">
-							<li>Paypal<a href="#"><img src="img/paypal.png" alt=""></a></li>
-							<li>Credit / Debit card<a href="#"><img src="img/mastercart.png" alt=""></a></li>
-							<li>Pay when you get the package</li>
-						</ul>
 						<button class="site-btn submit-order-btn">Place Order</button>
 					</form>
 				</div>
 				<div class="col-lg-4 order-1 order-lg-2">
 					<div class="checkout-cart">
 						<h3>Your Cart</h3>
-						<ul class="product-list">
-							<li>
-								<div class="pl-thumb"><img src="img/cart/1.jpg" alt=""></div>
-								<h6>Animal Print Dress</h6>
-								<p>$45.90</p>
-							</li>
-							<li>
-								<div class="pl-thumb"><img src="img/cart/2.jpg" alt=""></div>
-								<h6>Animal Print Dress</h6>
-								<p>$45.90</p>
-							</li>
+						<ul id="list-product-in-cart"  class="product-list">
+
 						</ul>
 						<ul class="price-list">
-							<li>Total<span>$99.90</span></li>
+							<li>Total<span class="total-price">$99.90</span></li>
 							<li>Shipping<span>free</span></li>
-							<li class="total">Total<span>$99.90</span></li>
+							<li class="total">Total<span class="total-price">$99.90</span></li>
 						</ul>
 					</div>
 				</div>
@@ -153,8 +142,86 @@
 	<!-- Footer section -->
 	<div th:replace="fragments/footer :: footer"></div>
 	<!-- Footer section end -->
+	<script>
+		var userInfo = null;
+		var token = getCookie("token");
+		function getCookie(cname) {
+			var name = cname + "=";
+			var ca = document.cookie.split(';');
+			for(var i = 0; i < ca.length; i++) {
+				var c = ca[i];
+				while (c.charAt(0) == ' ') {
+					c = c.substring(1);
+				}
+				if (c.indexOf(name) == 0) {
+					return c.substring(name.length, c.length);
+				}
+			}
+			return "";
+		}
+		console.log(token);
+		getUserInfo();
+		function getUserInfo() {
+			if(token == ""){
+				console.log("Tai khoan chua dang nhap");
+			}
+			$.ajax({
+				url: "http://localhost:8082/apiLogin/getUserInfo",
+				data: { signature: token },
+				type: "GET",
+				beforeSend: function(xhr){xhr.setRequestHeader('token', token);},
+				success: function (result) {
+					console.log(result);
+					if(result.data != null){
+						userInfo = result.data;
+						console.log(userInfo);
+						renderUserData(userInfo);
+						renderProductInCard(userInfo.cart.listProduct);
+					}
+					else{
+						window.location.replace("http://localhost:8082/login");
+					}
+				}
+			})
+		}
+		var defaultInfo = true;
+		$('#form-input input').on('change', function() {
+			if($('input[name=pm]:checked', '#form-input').val() == "2")
+			{
+				$('#default-info').css("display","none");
+				$('#different-info').css("display","block");
+				defaultInfo =false;
+			}
+			else{
+				$('#default-info').css("display","block");
+				$('#different-info').css("display","none");
+				defaultInfo = true;
+			}
+		});
+		function renderUserData(data) {
+			console.log(data.name);
+			$('#name-of-user').html("Name: "+ data.name );
+			$('#user-address').html("Address: "+ data.address);
+			$('#user-phone').html("Phone number: "+ data.phone);
+		}
 
+		function renderProductInCard(data) {
+			$('#list-product-in-cart').empty();
+			let totalPrice = 0;
+			data.map(item => {
+				$('#list-product-in-cart').append(`<li>
+<div class="pl-thumb"><img src="./img/product/${item.image%11 +1}.jpg" alt=""></div>
+<h6>${item.name}</h6>
+<p>Quangtity: ${item.quantity}</p>
+<p>$ ${item.price * item.quantity}</p>
+</li>`);
+				totalPrice += item.price * item.quantity;
+			})
+			$('.total-price').empty();
+			$('.total-price').html("$" +totalPrice);
+		}
 
+	</script>
 
 	<!--====== Javascripts & Jquery ======-->
 	<script src="js/jquery-3.2.1.min.js"></script>

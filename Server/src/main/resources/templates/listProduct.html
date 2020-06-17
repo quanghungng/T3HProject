@@ -316,7 +316,7 @@
 						$('#list-children').empty();
 						for(let i = 0; i < result.data.length; i++){
 							if(result.data[i].categoryType == "Woman"){
-								$('#list-woman').append(`<li><a href="#" type="button" onclick="changeCategory('${result.data[i].categoryName}','${result.data[i].categoryType}')">${result.data[i].categoryName}</a></li>`);
+								$('#list-woman').append(`<li class="active"><a id="${result.data[i].categoryName}" href="#" type="button" onclick="changeCategory('${result.data[i].categoryName}','${result.data[i].categoryType}')">${result.data[i].categoryName}</a></li>`);
 							}
 							if(result.data[i].categoryType == "Man" )
 									$('#list-man').append(`<li><a href="#" type="button" onclick="changeCategory('${result.data[i].categoryName}','${result.data[i].categoryType}')">${result.data[i].categoryName}</a></li>`);
@@ -337,6 +337,7 @@
 			categoryType = type;
 			currentCategory = categoryName;
 		    loadAllData();
+		    $(categoryName).css("color","#f51167");
 		}
 
 		var userInfo = null;
