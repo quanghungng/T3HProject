@@ -82,15 +82,12 @@
 						<div id="different-info" style="display: none;" class="row address-inputs">
 							<div class="col-md-12">
 								<p>*Billing Information</p>
-								<input type="text" placeholder="Name">
-								<input type="text" placeholder="Phone number">
-								<input type="text" placeholder="Address">
+								<input id="input-name" type="text" placeholder="Name">
+								<input id="input-phone" type="text" placeholder="Phone number">
+								<input id="input-address" type="text" placeholder="Address">
 							</div>
-							<div class="col-md-6">
-								<input type="text" placeholder="Zip code">
-							</div>
-							<div class="col-md-6">
-								<input type="text" placeholder="Note">
+							<div class="col-md-12">
+								<input id="input-note" type="text" placeholder="Note">
 							</div>
 						</div>
 						<div class="cf-title">Delievery Info</div>
@@ -118,7 +115,7 @@
 								</div>
 							</div>
 						</div>
-						<button class="site-btn submit-order-btn">Place Order</button>
+						<button onclick="placeOrder()" type="button" class="site-btn ">Place Order</button>
 					</form>
 				</div>
 				<div class="col-lg-4 order-1 order-lg-2">
@@ -199,7 +196,6 @@
 			}
 		});
 		function renderUserData(data) {
-			console.log(data.name);
 			$('#name-of-user').html("Name: "+ data.name );
 			$('#user-address').html("Address: "+ data.address);
 			$('#user-phone').html("Phone number: "+ data.phone);
@@ -221,6 +217,58 @@
 			$('.total-price').html("$" +totalPrice);
 		}
 
+		function placeOrder() {
+			token = getCookie("token");
+			getUserInfo();
+			let  placeOrderRequest;
+			let type;
+			let name;
+			let address;
+			let phone;
+			let note;
+			if(defaultInfo)
+			{type = "default";
+			name = userInfo.name;
+			address = userInfo.address;
+			phone = userInfo.phone;
+			note = "";
+			}
+			else{
+				type = "different";
+				name = $('#input-name').val();
+				address = $('#input-address').val();
+				phone = $('#input-phone').val();
+				note = $('#input-note').val();
+			}
+			placeOrderRequest = {
+				type: type,
+				name: name,
+				phone: phone,
+				address: address,
+				note: note
+			};
+			$.ajax({
+				url:"http://localhost:8082/cart/checkout/"+ userInfo.id,
+				type:"POST",
+				data: { signature: token},
+				data:JSON.stringify(placeOrderRequest),
+				beforeSend: function(xhr){xhr.setRequestHeader('token', token);},
+				contentType: "application/json",
+				success: function (response) {
+					console.log(response);
+					if(response.code == '00'){
+						alert("success");
+						window.location.replace("http://localhost:8082/index");
+					}
+					else{
+						alert("Error");
+					}
+				},
+				error: function (error) {
+					alert(error);
+				}
+			})
+		}
 	</script>
 
 	<!--====== Javascripts & Jquery ======-->

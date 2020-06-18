@@ -3,17 +3,18 @@ package com.example.demo.controller;
 import com.example.demo.constant.Code;
 import com.example.demo.constant.Message;
 import com.example.demo.dto.BaseResponse;
+import com.example.demo.dto.PlaceOrderRequest;
 import com.example.demo.dto.UpdateCartRequest;
-import com.example.demo.model.Cart;
-import com.example.demo.model.Product;
-import com.example.demo.model.Users;
+import com.example.demo.model.*;
 import com.example.demo.repository.ProductRepository;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.service.AuthenRequestAPIService;
 import com.example.demo.service.TokenService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.aggregation.BooleanOperators;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -206,6 +207,113 @@ import java.util.Optional;
             }
             user.setCart(exitsCart);
             userRepository.save(user);
+            return response;
+        }
+        @RequestMapping(value = "checkout/{id}", method = RequestMethod.POST)
+        public BaseResponse checkout(@RequestBody PlaceOrderRequest placeOrderRequest, @RequestHeader("token") String token, @PathVariable("id") String id){
+            BaseResponse response = new BaseResponse();
+
+            if(authenRequestAPIService.checkValidOfTokenAndId(token,id).equals("Invalid token")){
+                response.setCode(Code.NOT_FOUND);
+                response.setMessage("Token is invalid");
+                response.setData(null);
+                return response;
+            }
+            if(authenRequestAPIService.checkValidOfTokenAndId(token,id).equals("Invalid token")){
+                response.setCode(Code.NOT_FOUND);
+                response.setMessage("Request is not allowed");
+                response.setData(null);
+                return response;
+            }
+            Optional<Users> optionalUsers = userRepository.findById(id);
+
+            // Check whether id of user is available
+            if(!optionalUsers.isPresent()){
+                response.setCode(Code.NOT_FOUND);
+                response.setMessage(Message.NOT_FOUND);
+                response.setData(null);
+                return response;
+            }
+
+            Users user = optionalUsers.get();
+
+            // Check request
+            if(!placeOrderRequest.getType().equals("default") && !placeOrderRequest.getType().equals("different")){
+                response.setCode(Code.INVALID_DATA);
+                response.setMessage(Message.INVALID_DATA);
+                response.setData(null);
+                return response;
+            }
+
+            // Check if nothing in cart
+            if(user.getCart().getListProduct().size() <=0){
+                response.setCode(Code.INVALID_DATA);
+                response.setMessage("Nothing in your cart!");
+                response.setData(null);
+                return response;
+            }
+            if(placeOrderRequest.getType().equals("default")){
+                Order order = new Order();
+                order.setCart(user.getCart());
+                OrderInfo orderInfo = new OrderInfo();
+                orderInfo.setName(user.getName());
+                orderInfo.setAddress(user.getAddress());
+                orderInfo.setPhone(user.getPhone());
+                orderInfo.setNote("");
+                order.setOrderInfo(orderInfo);
+                order.setStatus("processing");
+                List<Order> listOrder = user.getListOrder();
+                listOrder.add(order);
+                user.setListOrder(listOrder);
+
+                // clear cart
+                Cart newCart = new Cart();
+                newCart.setListProduct(new ArrayList<>());
+                user.setCart(newCart);
+                userRepository.save(user);
+
+                response.setCode(Code.SUCCESS);
+                response.setMessage("Success");
+                response.setData(user);
+                return response;
+            }
+            if(placeOrderRequest.getType().equals("different")){
+                if(placeOrderRequest.getAddress().isEmpty() ||
+                        placeOrderRequest.getAddress().isEmpty() ||
+                        placeOrderRequest.getName().isEmpty()||
+                        placeOrderRequest.getPhone().isEmpty()){
+                    response.setCode(Code.INVALID_DATA);
+                    response.setMessage(Message.INVALID_DATA);
+                    response.setData(null);
+                    return response;
+                }
+                Order order = new Order();
+                order.setCart(user.getCart());
+
+                OrderInfo orderInfo = new OrderInfo();
+                orderInfo.setName(placeOrderRequest.getName());
+                orderInfo.setAddress(placeOrderRequest.getAddress());
+                orderInfo.setPhone(placeOrderRequest.getPhone());
+                orderInfo.setNote(placeOrderRequest.getNote());
+                order.setOrderInfo(orderInfo);
+                order.setStatus("processing");
+                List<Order> listOrder = user.getListOrder();
+                listOrder.add(order);
+                user.setListOrder(listOrder);
+
+                // clear cart
+                Cart newCart = new Cart();
+                newCart.setListProduct(new ArrayList<>());
+                user.setCart(newCart);
+                userRepository.save(user);
+                response.setCode(Code.SUCCESS);
+                response.setMessage("Success");
+                response.setData(user);
+                return response;
+            }
+
+
+
             return response;
         }
     }
