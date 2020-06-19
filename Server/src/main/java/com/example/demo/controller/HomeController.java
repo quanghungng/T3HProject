@@ -13,7 +13,7 @@ public class HomeController {
     }
     @RequestMapping(value = "/listProduct")
     public String listProduct() { return "listProduct"; }
-    @RequestMapping(value = "/productDetail/{id}")
+    @RequestMapping(value = "/productDetail")
     public String productDetail() {
         return "productDetail"; }
     @RequestMapping(value = "/registration")

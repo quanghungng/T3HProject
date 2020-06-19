@@ -44,8 +44,8 @@
 		<div class="container">
 			<h4>Your cart</h4>
 			<div class="site-pagination">
-				<a href="">Home</a> /
-				<a href="">Your cart</a>
+				<a href="/index">Home</a> /
+				<a href="">Checkout</a>
 			</div>
 		</div>
 	</div>
@@ -98,19 +98,8 @@
 							<div class="col-6">
 								<div class="cf-radio-btns">
 									<div class="cfr-item">
-										<input type="radio" name="shipping" id="ship-1">
+										<input checked="checked" type="radio" name="shipping" id="ship-1">
 										<label for="ship-1">Free</label>
-									</div>
-								</div>
-							</div>
-							<div class="col-6">
-								<h4>Next day delievery  </h4>
-							</div>
-							<div class="col-6">
-								<div class="cf-radio-btns">
-									<div class="cfr-item">
-										<input type="radio" name="shipping" id="ship-2">
-										<label for="ship-2">$3.45</label>
 									</div>
 								</div>
 							</div>
@@ -208,7 +197,7 @@
 				$('#list-product-in-cart').append(`<li>
 <div class="pl-thumb"><img src="./img/product/${item.image%11 +1}.jpg" alt=""></div>
 <h6>${item.name}</h6>
-<p>Quangtity: ${item.quantity}</p>
+<p>Quantity: ${item.quantity}</p>
 <p>$ ${item.price * item.quantity}</p>
 </li>`);
 				totalPrice += item.price * item.quantity;

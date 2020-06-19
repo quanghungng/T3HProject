@@ -46,7 +46,7 @@
 		<div class="container">
 			<h4>CAtegory PAge</h4>
 			<div class="site-pagination">
-				<a href="">Home</a> /
+				<a href="/index">Home</a> /
 				<a href="">Shop</a> /
 			</div>
 		</div>
@@ -246,6 +246,7 @@
 <div class="pi-links">
 <a href="#" class="add-card"><i class="flaticon-bag"></i><span onclick="addSingleProductToCart(${data[i].id})">ADD TO CART</span></a>
 <a href="#" class="wishlist-btn"><i class="flaticon-heart"></i></a>
+<a href="#" onclick="viewProductDetail(${data[i].id})" class="wishlist-btn"><i class="flaticon-target"></i></a>
 </div>
 </div>
 <div class="pi-text">
@@ -424,7 +425,10 @@
 				}
 			})
 		}
-
+	function viewProductDetail(productID) {
+		sessionStorage.setItem("productID", productID);
+		window.location.replace("http://localhost:8082/productDetail");
+	}
 
 	</script>
 

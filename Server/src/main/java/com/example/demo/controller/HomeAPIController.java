@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api")
@@ -80,6 +81,22 @@ public class HomeAPIController {
         response.setCode(Code.SUCCESS);
         response.setMessage(Message.GET_DATA_SUCCESS);
         response.setData(categoryList);
+        return response;
+    }
+    @RequestMapping(value = "/product/getProductDetail/{id}", method = RequestMethod.GET)
+    public BaseResponse getProductDetail(@PathVariable String id){
+        BaseResponse response = new BaseResponse();
+
+        Optional<Product> product = productRepository.findById(id);
+        if(!product.isPresent()){
+            response.setCode(Code.NOT_FOUND);
+            response.setMessage(Message.NOT_FOUND);
+            response.setData(null);
+            return response;
+        }
+        response.setCode(Code.SUCCESS);
+        response.setMessage(Message.GET_DATA_SUCCESS);
+        response.setData(product);
         return response;
     }
     @RequestMapping(value = "getinfo/{userID}", method = RequestMethod.GET)

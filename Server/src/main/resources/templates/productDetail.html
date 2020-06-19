@@ -46,8 +46,8 @@
 		<div class="container">
 			<h4>Category PAge</h4>
 			<div class="site-pagination">
-				<a href="">Home</a> /
-				<a href="">Shop</a>
+				<a href="/index">Home</a> /
+				<a href="">Detail</a>
 			</div>
 		</div>
 	</div>
@@ -58,12 +58,12 @@
 	<section class="product-section">
 		<div class="container">
 			<div class="back-link">
-				<a href="listProduct.html"> &lt;&lt; Back to Category</a>
+				<a href="/listProduct"> &lt;&lt; Back to Category</a>
 			</div>
 			<div class="row">
 				<div class="col-lg-6">
 					<div class="product-pic-zoom">
-						<img class="product-big-img" src="img/single-product/1.jpg" alt="">
+						<img id="product-main-img" class="product-big-img" src="img/single-product/1.jpg" alt="">
 					</div>
 					<div class="product-thumbs" tabindex="1" style="overflow: hidden; outline: none;">
 						<div class="product-thumbs-track">
@@ -75,8 +75,8 @@
 					</div>
 				</div>
 				<div class="col-lg-6 product-details">
-					<h2 class="p-title">White peplum top</h2>
-					<h3 class="p-price">$39.90</h3>
+					<h2 id="product-name" class="p-title">White peplum top</h2>
+					<h3 id="product-price" class="p-price">$39.90</h3>
 					<h4 class="p-stock">Available: <span>In Stock</span></h4>
 					<div class="p-rating">
 						<i class="fa fa-star-o"></i>
@@ -85,10 +85,7 @@
 						<i class="fa fa-star-o"></i>
 						<i class="fa fa-star-o fa-fade"></i>
 					</div>
-					<div class="p-review">
-						<a href="">3 reviews</a>|<a href="">Add your review</a>
-					</div>
-					<div class="fw-size-choose">
+					<div id="product-list-size" class="fw-size-choose">
 						<p>Size</p>
 						<div class="sc-item">
 							<input type="radio" name="sc" id="xs-size">
@@ -117,16 +114,16 @@
 					</div>
 					<div class="quantity">
 						<p>Quantity</p>
-                        <div class="pro-qty"><input type="text" value="1"></div>
+                        <div class="pro-qty"><input id="product-quantity" type="text" value="1"></div>
                     </div>
-					<a href="#" class="site-btn">SHOP NOW</a>
+					<a href="#" onclick="addToCart()" class="site-btn">ADD TO CART</a>
 					<div id="accordion" class="accordion-area">
 						<div class="panel">
 							<div class="panel-header" id="headingOne">
 								<button class="panel-link active" data-toggle="collapse" data-target="#collapse1" aria-expanded="true" aria-controls="collapse1">information</button>
 							</div>
 							<div id="collapse1" class="collapse show" aria-labelledby="headingOne" data-parent="#accordion">
-								<div class="panel-body">
+								<div id="product-description" class="panel-body">
 									<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin pharetra tempor so dales. Phasellus sagittis auctor gravida. Integer bibendum sodales arcu id te mpus. Ut consectetur lacus leo, non scelerisque nulla euismod nec.</p>
 									<p>Approx length 66cm/26" (Based on a UK size 8 sample)</p>
 									<p>Mixed fibres</p>
@@ -254,7 +251,111 @@
 	<!-- Footer section -->
 	<div th:replace="fragments/footer :: footer"></div>
 	<!-- Footer section end -->
+	<script>
+		var productID = sessionStorage.getItem('productID');
+		loadProductDetail();
+		function loadProductDetail() {
+			$.ajax({
+				url: "http://localhost:8082/api/product/getProductDetail/" + productID,
+				success: function (result) {
+					console.log(result);
+					if (result.code == "00") {
+						renderData(result.data);
+					}
+				}
+			})
+		}
+		function renderData(data){
+			$('#product-name').html(data.name);
+			$('#product-price').html("$ " + data.price);
+			$('#product-main-img').attr("src", "./img/product/" + (data.image%11 +1) +".jpg");
+			$('#product-description').empty();
+			$('#product-description').append(`<p>${data.description}</p>`);
+			$('#product-list-size').empty();
+			$('#product-list-size').append(`<p>Size</p>`);
+			for(let i = 0; i< data.size.length; i++){
+				$('#product-list-size').append(`<div class="sc-item">
+<input type="radio" name="sc" id="${data.size[i]}">
+<label for="${data.size[i]}">${data.size[i]}</label>
+</div>`);
+			}
+		}
 
+		function getUserInfo() {
+			if(token == ""){
+				console.log("Tai khoan chua dang nhap");
+			}
+			$.ajax({
+				url: "http://localhost:8082/apiLogin/getUserInfo",
+				data: { signature: token },
+				type: "GET",
+				beforeSend: function(xhr){xhr.setRequestHeader('token', token);},
+				success: function (result) {
+					console.log(result);
+					if(result.data != null){
+						userInfo = result.data;
+						console.log(userInfo);
+						fillUserInfo();
+
+					}
+				}
+			})
+		}
+		function fillUserInfo() {
+			$('#icon-login').remove();
+			$('#user-name').html("Hi, "+userInfo.name);
+			$("#user-info").css("display", "inline-block");
+			let numberProductInCart = 0;
+			userInfo.cart.listProduct.map(item => {
+				numberProductInCart += item.quantity;
+			});
+			console.log("Number of product in cart: " + numberProductInCart);
+			$('#number-product-in-cart').html(numberProductInCart);
+		}
+		var userInfo = null;
+		var token = getCookie("token");
+		var productQuantity = 1;
+		function addToCart() {
+			token = getCookie("token");
+			productQuantity = $('#product-quantity').val();
+			if(productQuantity < 1){
+				alert("Error");
+				return;
+			}
+			getUserInfo();
+			if(userInfo == null){
+				window.location.replace("http://localhost:8082/login");
+				return;
+			}
+			let updateCartRequest = {
+				id:productID,
+				number: productQuantity,
+				type: 1
+			};
+			$.ajax({
+				url:"http://localhost:8082/cart/update/"+userInfo.id,
+				data: { signature: token },
+				type:"PUT",
+				data:JSON.stringify(updateCartRequest),
+				contentType: "application/json",
+				beforeSend: function(xhr){xhr.setRequestHeader('token', token);},
+				success: function (response) {
+					console.log(response);
+					if(response.code == '00'){
+						console.log("Sucess add product to cart!");
+						token = getCookie("token");
+						getUserInfo();
+					}
+					if(response.code == '404'){
+						window.location.replace("http://localhost:8082/login");
+					}
+				},
+				error: function (error) {
+					alert(error);
+				}
+			})
+		}
+	</script>
 
 
 	<!--====== Javascripts & Jquery ======-->
