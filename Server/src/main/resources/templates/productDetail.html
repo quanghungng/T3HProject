@@ -319,7 +319,7 @@
 			token = getCookie("token");
 			productQuantity = $('#product-quantity').val();
 			if(productQuantity < 1){
-				alert("Error");
+				alertify.error('Error');
 				return;
 			}
 			getUserInfo();
@@ -342,16 +342,16 @@
 				success: function (response) {
 					console.log(response);
 					if(response.code == '00'){
-						console.log("Sucess add product to cart!");
 						token = getCookie("token");
 						getUserInfo();
+						alertify.success('Success add product to cart');
 					}
 					if(response.code == '404'){
 						window.location.replace("http://localhost:8082/login");
 					}
 				},
 				error: function (error) {
-					alert(error);
+					alertify.error('Error');
 				}
 			})
 		}

@@ -29,26 +29,26 @@ public class LoginAPIController {
     @RequestMapping(value = "register" , method = RequestMethod.POST)
     public BaseResponse register(@RequestBody RegisterRequest registerRequest){
         BaseResponse response = new BaseResponse();
+        if(registerRequest.getName().isEmpty() ||
+                registerRequest.getEmail().isEmpty()||
+                registerRequest.getPhone().isEmpty() ||
+                registerRequest.getPassword().isEmpty() ||
+                registerRequest.getUsername().isEmpty() ||
+                registerRequest.getAddress().isEmpty()){
+            response.setCode(Code.INVALID_DATA);
+            response.setMessage("Missing data fields");
+            response.setData(null);
+            return response;
+        }
         if(registerRequest.getUsername().length() < 6){
             response.setCode(Code.INVALID_DATA);
-            response.setMessage("Ten dang nhap khong hop le!");
+            response.setMessage("Invalid Username");
             response.setData(null);
             return response;
         }
         if(registerRequest.getPassword().length() < 6){
             response.setCode(Code.INVALID_DATA);
-            response.setMessage("Password khong hop le!");
-            response.setData(null);
-            return response;
-        }
-        if(registerRequest.getName().isEmpty() ||
-        registerRequest.getEmail().isEmpty()||
-        registerRequest.getPhone().isEmpty() ||
-        registerRequest.getPassword().isEmpty() ||
-        registerRequest.getUsername().isEmpty() ||
-        registerRequest.getAddress().isEmpty()){
-            response.setCode(Code.INVALID_DATA);
-            response.setMessage("Chua nhap du du lieu");
+            response.setMessage("Invalid Password");
             response.setData(null);
             return response;
         }
@@ -56,15 +56,15 @@ public class LoginAPIController {
         boolean found = false;
         for(Users user:listUser){
             if(registerRequest.getUsername().equals(user.getUsername())){
-                response.setMessage("Ten dang nhap da duoc su sung");
+                response.setMessage("Username has been used");
                 found = true;
             }
             if(registerRequest.getPhone().equals(user.getPhone())){
-                response.setMessage("So dien thoai da duoc su dung!");
+                response.setMessage("Phone number has been used");
                 found = true;
             }
             if(registerRequest.getEmail().equals(user.getEmail())){
-                response.setMessage("Email da duoc su dung!");
+                response.setMessage("Email has been used");
                 found = true;
             }
         }
@@ -89,7 +89,7 @@ public class LoginAPIController {
             newUser.setCart(cart);
             userRepository.save(newUser);
             response.setCode(Code.SUCCESS);
-            response.setMessage("Dang ki thanh cong!");
+            response.setMessage("Registered Successfully");
             response.setData(newUser);
         }
         return response;

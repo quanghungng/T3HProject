@@ -68,6 +68,7 @@
                             <input id="username" type="text" >
                             <label for="password">Password</label>
                             <input id="password" type="password" >
+                            <p><a href="/registration">Create an account</a></p>
                         </div>
                     </div>
                     <button onclick="login()" type="button" class="site-btn submit-order-btn">Login</button>
@@ -139,7 +140,7 @@
                     setCookie("token",result.data,5);
                     window.location.replace("http://localhost:8082/index");
                 }
-                else alert(result.message);
+                else alertify.error(result.message);;
             }
         })
     }

@@ -14,10 +14,19 @@ $(window).on('load', function() {
 		Preloder
 	--------------------*/
 	$(".loader").fadeOut();
-	$("#preloder").delay(400).fadeOut("slow");
+	$("#preloder").delay(200).fadeOut("slow");
 
 });
 
+function loadAnimation(){
+	$('#body').prepend(`<div id="preloder">
+<div class="loader"></div>
+</div>`)
+}
+function removeAnimate() {
+	$(".loader").fadeOut();
+	$("#preloder").delay(400).fadeOut("slow");
+}
 (function($) {
 	/*------------------
 		Navigation

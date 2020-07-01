@@ -30,7 +30,7 @@
 	<![endif]-->
 
 </head>
-<body>
+<body id="body">
 	<!-- Page Preloder -->
 	<div id="preloder">
 		<div class="loader"></div>
@@ -202,6 +202,7 @@
 				</div>
 			</div>
 		</div>
+		<button onclick="testAnimation()" type="button"></button>
 	</section>
 	<!-- Category section end -->
 
@@ -235,9 +236,13 @@
 			minimumFractionDigits: 0
 		})
 		function renderDataPage(page, data) {
+			loadAnimation();
 			$('#list-product').empty();
 			console.log(data);
-			if(data == null) return;
+			if(data == null){
+				removeAnimate();
+				return;
+			}
 			for (let i = productPerPage * (page - 1); i < Math.min(total, productPerPage * (page - 1) + productPerPage); i++) {
 				$('#list-product').append(`<div class="col-lg-4 col-sm-6">
 <div class="product-item">
@@ -245,8 +250,8 @@
 <img src="./img/product/${data[i].image%11 +1}.jpg" alt="">
 <div class="pi-links">
 <a href="#" class="add-card"><i class="flaticon-bag"></i><span onclick="addSingleProductToCart(${data[i].id})">ADD TO CART</span></a>
-<a href="#" class="wishlist-btn"><i class="flaticon-heart"></i></a>
-<a href="#" onclick="viewProductDetail(${data[i].id})" class="wishlist-btn"><i class="flaticon-target"></i></a>
+<a href="#" class="add-card"><i class="flaticon-heart"></i> <span onclick="">ADD TO WISH</span></a>
+<a href="#" class="add-card"><i class="flaticon-target"></i> <span onclick="viewProductDetail(${data[i].id})">VIEW DETAIL</span></a>
 </div>
 </div>
 <div class="pi-text">
@@ -256,6 +261,7 @@
 </div>
 </div>`)
 			}
+			removeAnimate();
 		}
 		var total;
 		var productPerPage = 9;
@@ -412,16 +418,16 @@
 				success: function (response) {
 					console.log(response);
 					if(response.code == '00'){
-						console.log("Sucess add product to cart!");
 						token = getCookie("token");
 						getUserInfo();
+						alertify.success('Success add product to cart');
 					}
 					if(response.code == '404'){
 						window.location.replace("http://localhost:8082/login");
 					}
 				},
 				error: function (error) {
-					alert(error);
+					alertify.error('Error');
 				}
 			})
 		}
@@ -429,6 +435,7 @@
 		sessionStorage.setItem("productID", productID);
 		window.location.replace("http://localhost:8082/productDetail");
 	}
+
 
 	</script>
 

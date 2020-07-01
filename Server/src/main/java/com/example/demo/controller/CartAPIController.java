@@ -311,9 +311,6 @@ import java.util.Optional;
                 response.setData(user);
                 return response;
             }
-
-
-
             return response;
         }
     }

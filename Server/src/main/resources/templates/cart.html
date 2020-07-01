@@ -30,7 +30,7 @@
 	<![endif]-->
 
 </head>
-<body>
+<body id="body">
 	<!-- Page Preloder -->
 	<div id="preloder">
 		<div class="loader"></div>
@@ -240,6 +240,7 @@
 		}
 
 		function renderProductInCard(data) {
+			loadAnimation();
 			$('#list-product-in-cart').empty();
 			let totalPrice = 0;
 			data.map(item => {
@@ -266,6 +267,7 @@
 			})
 			$('#total-price').empty();
 			$('#total-price').html("$" +totalPrice);
+			removeAnimate();
 		}
 
 
@@ -302,7 +304,7 @@
 					}
 				},
 				error: function (error) {
-					alert(error);
+					alertify.error('Error');
 				}
 			})
 		}
@@ -339,14 +341,14 @@
 					}
 				},
 				error: function (error) {
-					alert(error);
+					alertify.error('Error');
 				}
 			})
 		}
 
 		function updateNumberProduct(productID, number) {
 			if(isNaN(number) || number == "" || number<0 || number%1 != 0){
-				alert("invalid data!");
+				alertify.error('Invalid data!');
 				getProductInCart(cartID);
 				return;
 			}
@@ -382,7 +384,7 @@
 					}
 				},
 				error: function (error) {
-					alert(error);
+					alertify.error('Error');
 				}
 			})
 		}
