@@ -228,6 +228,7 @@
 	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
 
 	<script>
+		removeAnimate();
 		var cartID = 1;
 		var currentCategory = "all";
 		const formatter = new Intl.NumberFormat('en-US', {
@@ -249,9 +250,9 @@
 <div class="item pi-pic">
 <img src="./img/product/${data[i].image%11 +1}.jpg" alt="">
 <div class="pi-links">
-<a href="#" class="add-card"><i class="flaticon-bag"></i><span onclick="addSingleProductToCart(${data[i].id})">ADD TO CART</span></a>
-<a href="#" class="add-card"><i class="flaticon-heart"></i> <span onclick="">ADD TO WISH</span></a>
-<a href="#" class="add-card"><i class="flaticon-target"></i> <span onclick="viewProductDetail(${data[i].id})">VIEW DETAIL</span></a>
+<a onclick="addSingleProductToCart(${data[i].id})" href="#" class="add-card"><i class="flaticon-bag"></i><span >ADD TO CART</span></a>
+<a onclick="" href="#" class="add-card"><i class="flaticon-heart"></i> <span >ADD TO WISH</span></a>
+<a onclick="viewProductDetail(${data[i].id})" href="#" class="add-card"><i class="flaticon-target"></i> <span >VIEW DETAIL</span></a>
 </div>
 </div>
 <div class="pi-text">

@@ -12,6 +12,8 @@ import com.example.demo.model.Users;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.service.TokenService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -26,6 +28,10 @@ public class LoginAPIController {
     UserRepository userRepository;
     @Autowired
     TokenService tokenService;
+
+    @Autowired
+    JavaMailSender javaMailSender;
+
     @RequestMapping(value = "register" , method = RequestMethod.POST)
     public BaseResponse register(@RequestBody RegisterRequest registerRequest){
         BaseResponse response = new BaseResponse();
@@ -73,27 +79,22 @@ public class LoginAPIController {
             response.setData(null);
         }
         else{
-            Users newUser = new Users();
-            newUser.setName(registerRequest.getName());
-            newUser.setUsername(registerRequest.getUsername());
-            newUser.setPassword(registerRequest.getPassword());
-            newUser.setAddress(registerRequest.getAddress());
-            newUser.setEmail(registerRequest.getEmail());
-            newUser.setPhone(registerRequest.getPhone());
-            List<String> roles = new ArrayList<>();
-            roles.add("USER");
-            newUser.setListRole(roles);
-            newUser.setListOrder(new ArrayList<>());
-            Cart cart = new Cart();
-            cart.setListProduct(new ArrayList<>());
-            newUser.setCart(cart);
-            userRepository.save(newUser);
             response.setCode(Code.SUCCESS);
             response.setMessage("Registered Successfully");
-            response.setData(newUser);
+            response.setData(null);
+
+            SimpleMailMessage msg = new SimpleMailMessage();
+            msg.setTo(registerRequest.getEmail());
+            msg.setSubject("Success Registered");
+            msg.setText(  "Click this link to verify your account: \n"  +  "http://localhost:8082/verifyRegister/"   +tokenService.generateJWTForRegister(registerRequest.getUsername(),registerRequest.getPassword(),registerRequest.getName(),registerRequest.getPhone(),registerRequest.getEmail(),registerRequest.getAddress()));
+            javaMailSender.send(msg);
         }
         return response;
     }
+
+
+
+
     @RequestMapping(value = "login", method = RequestMethod.POST)
     public BaseResponse login(@RequestBody LoginRequest loginRequest){
         BaseResponse response = new BaseResponse();
@@ -112,7 +113,7 @@ public class LoginAPIController {
         else{
             String token = tokenService.generateJWT(loginRequest.getUsername(),loginRequest.getPassword(),user.get(0).getId());
             response.setCode(Code.SUCCESS);
-            response.setMessage("Login thanh cong!");
+            response.setMessage("Login successfully!");
             response.setData(token);
         }
 

@@ -4,6 +4,7 @@ import com.example.demo.model.Category;
 import com.example.demo.model.Product;
 import com.example.demo.repository.CategoryRepository;
 import com.example.demo.repository.ProductRepository;
+import com.example.demo.service.TokenService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -19,6 +20,9 @@ public class ServerApplication implements CommandLineRunner {
     ProductRepository productRepository;
     @Autowired
     CategoryRepository categoryRepository;
+
+    @Autowired
+    TokenService tokenService;
     public static void main(String[] args) {
         SpringApplication.run(ServerApplication.class, args);
     }
@@ -45,5 +49,5 @@ public class ServerApplication implements CommandLineRunner {
 //        category.setCategoryType("Woman");
 //        category.setCategoryName("T-Shirt");
 //        categoryRepository.save(category);
-   }
+    }
 }
