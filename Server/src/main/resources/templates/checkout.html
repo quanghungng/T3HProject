@@ -30,7 +30,7 @@
 	<![endif]-->
 	<div th:replace="fragments/link :: link"></div>
 </head>
-<body>
+<body id="body">
 	<!-- Page Preloder -->
 	<div id="preloder">
 		<div class="loader"></div>
@@ -207,6 +207,7 @@
 		}
 
 		function placeOrder() {
+			loadAnimation();
 			token = getCookie("token");
 			getUserInfo();
 			let  placeOrderRequest;
@@ -248,10 +249,13 @@
 					if(response.code == '00'){
 						alertify.success('Success ordered');
 						window.location.replace("http://localhost:8082/index");
+						removeAnimate();
 					}
 					else{
 						alertify.error('Error');
+						removeAnimate();
 					}
+
 				},
 				error: function (error) {
 					alertify.error('Error');

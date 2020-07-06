@@ -12,8 +12,14 @@ import com.example.demo.service.AuthenRequestAPIService;
 import com.example.demo.service.TokenService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.aggregation.BooleanOperators;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMailMessage;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.web.bind.annotation.*;
 
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -32,6 +38,9 @@ import java.util.Optional;
 
         @Autowired
         AuthenRequestAPIService authenRequestAPIService;
+
+        @Autowired
+        JavaMailSender javaMailSender;
 
         // Get all product in cart of user
         @RequestMapping("/products/{id}")
@@ -210,7 +219,7 @@ import java.util.Optional;
             return response;
         }
         @RequestMapping(value = "checkout/{id}", method = RequestMethod.POST)
-        public BaseResponse checkout(@RequestBody PlaceOrderRequest placeOrderRequest, @RequestHeader("token") String token, @PathVariable("id") String id){
+        public BaseResponse checkout(@RequestBody PlaceOrderRequest placeOrderRequest, @RequestHeader("token") String token, @PathVariable("id") String id) throws MessagingException {
             BaseResponse response = new BaseResponse();
 
             if(authenRequestAPIService.checkValidOfTokenAndId(token,id).equals("Invalid token")){
@@ -275,7 +284,45 @@ import java.util.Optional;
                 response.setCode(Code.SUCCESS);
                 response.setMessage("Success");
                 response.setData(user);
-                return response;
+
+                MimeMessage message = javaMailSender.createMimeMessage();
+                boolean multipart = true;
+                MimeMessageHelper helper = new MimeMessageHelper(message, multipart, "utf-8");
+                String htmlMsg ="";
+                htmlMsg += "<h1> Successfully Ordered!</h1> <h2> Bill Information </h2> <strong>Name: </strong><p>" + user.getName()+ "</p><br><strong>Phone: </strong><p>" + user.getPhone() + "</p><br><strong>Address: </strong><p>" + user.getAddress() + "</p><br>";
+            htmlMsg += "<table  style=\"border: 1px solid deeppink; width: 70%;text-align: center;background-color: lightpink; \">\n" +
+                        "\t\t<tr>\n" +
+                        "\t\t\t<th>No.</th>\n" +
+                        "\t\t\t<th>Product Name</th>\n" +
+                        "\t\t\t<th>Quantity</th>\n" +
+                        "\t\t\t<th>Unit Price</th>\n" +
+                        "\t\t\t<th>Price</th>\n" +
+                        "\t\t</tr>\n";
+                int i = 1;
+                float total =0;
+                for (Product p: order.getCart().getListProduct()
+                     ) {
+                    htmlMsg += "<tr><td>" + i++ +"</td><td>" + p.getName() + "</td><td>" + p.getQuantity() + "</td><td>" + p.getPrice() + "</td><td>" + p.getQuantity()*p.getPrice()+ "</td></tr>";
+                    total += p.getQuantity()*p.getPrice();
+                }
+
+                htmlMsg +=
+                        "\t\t<tr  style=\"background-color: deeppink;\">\n" +
+                                "\t\t\t<td style=\"color: antiquewhite; font-weight: bold;\" colspan=\"4\">Shipping</td>\n" +
+                                "\t\t\t<td>  "    +   "free" +  "        </td>\n" +
+                                "\t\t</tr>\n" ;
+                htmlMsg +=
+                        "\t\t<tr  style=\"background-color: deeppink;\">\n" +
+                        "\t\t\t<td style=\"color: antiquewhite; font-weight: bold;\" colspan=\"4\">Total</td>\n" +
+                        "\t\t\t<td>  "    +   total +  "        </td>\n" +
+                        "\t\t</tr>\n" +
+                        "\t</table>";
+
+                htmlMsg += "<h3><i>Thanks for using our services</i></h3>";
+                message.setContent(htmlMsg, "text/html; charset=utf-8");
+                helper.setTo(user.getEmail());
+                helper.setSubject("Success Order");
+                javaMailSender.send(message);
             }
             if(placeOrderRequest.getType().equals("different")){
                 if(placeOrderRequest.getAddress().isEmpty() ||
@@ -309,7 +356,6 @@ import java.util.Optional;
                 response.setCode(Code.SUCCESS);
                 response.setMessage("Success");
                 response.setData(user);
-                return response;
             }
             return response;
         }
